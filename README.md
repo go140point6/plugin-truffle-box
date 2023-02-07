@@ -9,7 +9,7 @@ This version of Plugin Crypto Adapter Truffle Box fully automates contract creat
 - It creates 1:1:1 Oracle to JobId to InternalContract
 - It runs fulfillment on the OCA.
 - It runs approval and transfer of PLI funds to the ICA.
-- It run a test against the crypto pair and datafeed set.
+- It runs a test against the crypto pair and datafeed set.
 - Most importantly, it tracks all this in a lightweight SQLite database.
 
 ## .env should have following parameters
@@ -44,7 +44,6 @@ exit and restart your terminal session
 
 - install latest LTS version of node (currently v18.14.0)
 ```
-cd plugin-truffle-box
 nvm install --lts
 ```
 
