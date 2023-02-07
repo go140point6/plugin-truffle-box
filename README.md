@@ -77,7 +77,10 @@ OR
 note that if doing more than 10, you will get a warning and must add -f true to your request.
 
 ## What's next?
-- scripts 
+- scripts for database maintenance.
+- better tests to ensure steps are actually carried out.
+- database table for logging errors?
+- script to sweep the deployed OCA's and pull back earned PLI to wallet.
 
 ## GoPlugin Installation Documentation
 - https://docs.goplugin.co/
