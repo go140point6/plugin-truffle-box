@@ -20,7 +20,7 @@
 
 require('dotenv').config();
 const privatekey = process.env["PRIVATEKEY"];
-console.log("privatekye",privatekey);
+//console.log("privatekye",privatekey);
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 
 module.exports = {
@@ -55,7 +55,8 @@ module.exports = {
           )
         },
         gas: 20000000,
-        network_id: 51
+        network_id: 51,
+        confirmations: 5
       },
       xinfin: {
         provider: function() {
@@ -65,7 +66,8 @@ module.exports = {
           )
         },
         gas: 200000000,
-        network_id: 50
+        network_id: 50,
+        confirmations: 5
       },
     },
   
@@ -77,7 +79,7 @@ module.exports = {
     // Configure your compilers
     compilers: {
       solc: {
-        version: "0.6.6",      // Fetch exact version from solc-bin (default: truffle's version)
+        version: "0.4.24",      // Fetch exact version from solc-bin (default: truffle's version)
         // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
         settings: {          // See the solidity docs for advice about optimization and evmVersion
          optimizer: {

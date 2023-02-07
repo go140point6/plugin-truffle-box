@@ -1,12 +1,40 @@
 /* eslint-disable */
+const Database = require('better-sqlite3');
 const Xdc3 = require("xdc3");
+const chalk = require("chalk");
+
 require("dotenv").config();
 
-console.log("testing", process.env.PRIVATEKEY, process.env.CONSUMERADDRESS);
+const db = new Database('data/data.db', {verbose: console.log });
+var tableModel = "topcrypto_model";
+var tableNew;
+var tableMain = "main";
+
+var oracle;
+var ic;
+var prevNonce;
+
+doApprove();
+
+async function doApprove() {
+    await getApprove();
+    await main().catch(e => console.error(e));
+    await setApproveTrue();
+    await checkWork()
+}
 
 const convertTokens = async (n) => {
     b = new Xdc3.utils.BN(Xdc3.utils.toWei(n.toString(), 'ether'));
     return b;
+}
+
+async function getApprove() {
+    const getApp = db.prepare(`SELECT ic FROM ${tableMain} WHERE approve IS 0`);
+    let result = getApp.get();
+    ic = result.ic;
+
+    console.log("\n");
+    console.log(`The IC to approve will be: ${chalk.green(ic)}`);
 }
 
 async function main() {
@@ -17,26 +45,28 @@ async function main() {
     const deployed_private_key = process.env.PRIVATEKEY;
     //Request ABI & Contract address to pass here
     const tokenABI = require("../build/contracts/PliTokenInterface.json").abi;
-    const requestABi = require("../build/contracts/Consumer.json").abi;
-    const pluginNode = process.env.NODEADDRESS;
+    const requestABi = require("../build/contracts/InternalContract.json").abi;
 
     //Defining tokenContract
     const tokenContract = new xdc3.eth.Contract(tokenABI, process.env.PLIADDRESS);
     // console.log("tokenContract", tokenContract)
     //Defining tokenContract
-    const requestContract = new xdc3.eth.Contract(requestABi, process.env.CONSUMERADDRESS);
+    const requestContract = new xdc3.eth.Contract(requestABi, ic);
     // console.log("requestContract", requestContract)
 
     const _tokens = 0.5;
     const tokens = await convertTokens(_tokens);
-    console.log("Tokens are", tokens);
+    //console.log("Tokens are", tokens);
+    console.log("Tokens as string", tokens.toString());
     const account = xdc3.eth.accounts.privateKeyToAccount(deployed_private_key);
     const nonce = await xdc3.eth.getTransactionCount(account.address);
+    console.log("The nonce:", nonce);
+    prevNonce = nonce;
     const gasPrice = await xdc3.eth.getGasPrice();
     console.log("gasPrice",gasPrice)
     const tx = {
         nonce: nonce,
-        data: tokenContract.methods.approve(process.env.CONSUMERADDRESS, tokens).encodeABI(),
+        data: tokenContract.methods.approve(ic, tokens).encodeABI(),
         gasPrice: gasPrice,
         to: process.env.PLIADDRESS,
         from: account.address,
@@ -50,12 +80,23 @@ async function main() {
         tx,
         deployed_private_key
     );
-    xdc3.eth
+    await xdc3.eth
         .sendSignedTransaction(signed.rawTransaction)
         .once("receipt", console.log);
 
     console.log("Success first txn");
-
 }
 
-main().catch(e => console.error(e));
+async function setApproveTrue() {
+    const setTrue = db.prepare(`UPDATE ${tableMain} SET approve = 1 WHERE ic = '${ic}'`);
+    setTrue.run();
+    console.log("\n");
+    console.log(`The IC approval is complete for ${chalk.green(ic)}.  Need to circle back and put in a true test.`);
+}
+
+async function checkWork() {
+    const checkWork = db.prepare(`SELECT * FROM ${tableMain} WHERE ic = '${ic}'`);
+    let result = checkWork.all();
+    console.log(result)
+    }
+

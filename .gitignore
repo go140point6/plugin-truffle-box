@@ -7,3 +7,6 @@ yarn-error.log*
 lerna-debug.log*
 .env
 node_modules
+.vscode
+plinode_job_data-feeds.json
+*.db

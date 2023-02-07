@@ -1,0 +1,8 @@
+USDT
+
+## A single base for the pair should be on line 1.  Work through one base, then switch to another base if you want more.
+## So do the top 100 crypto to USDT pairs, then do the top 100 crypto to XDC pairs for example. The database will keep track
+## of what you have already created.
+
+## NOTE: Not all feeds support all bases.  For example, tl_binance will NOT work with fiat base like USD.  Always test the process
+## on an apothem node if you want to keep your validator clean and tidy.
