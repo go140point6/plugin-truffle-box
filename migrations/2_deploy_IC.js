@@ -44,7 +44,7 @@ async function getStuff() {
     tableNew = `topcrypto_${datafeed}`;
 
     console.log("\n");
-    console.log(`The datafeed deployeIC will continue to use is: ${chalk.green(datafeed)}`);
+    console.log(`The datafeed deployIC will continue to use is: ${chalk.green(datafeed)}`);
     console.log(`The tsyms deployIC will continue to use for the IC will be ${chalk.green(tsyms)}`);
     console.log(`The table to be created or used to track pairs created will be: ${chalk.green(tableNew)}`);
     console.log(`The OCA for this IC will be: ${chalk.green(oracle)}`);

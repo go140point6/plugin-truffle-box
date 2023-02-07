@@ -25,8 +25,8 @@ doTest();
 async function doTest() {
     await getTested();
     await main().catch(e => console.error(e));
-    //await setTestedTrue();
-    //await checkWork()
+    await setTestedTrue();
+    await checkWork()
 }
 
 async function getTested() {

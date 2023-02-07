@@ -13,13 +13,9 @@ var tableNew;
 var tableMain = "main";
 
 var oracle;
-//var oracle = "0x258b4adA9E315A0b0c2a8437E1A41F0767241F2A";
 var jobId;
-//var jobId = "2ae512ed7ba74d8380b47da17da114db";
 var datafeed; // tl_binance, tl_coingecko, etc (set in datafeed.txt, one at a time)
-//var datafeed = "tl_binance";
-var tsyms; // USD, EUR, XDC, etc (set in tsyms.txt, one at a time)
-//var tsyms = "EUR";
+var tsyms; // USDT, BTC, XDC, etc (set in tsyms.txt, one at a time)
 
 module.exports = async function(deployer) {
     // Get datafeed and tsyms (work on one set at a time, i.e. tl_binance and USD --> then tl_binance and EUR or tl_coingecko and USD)
@@ -45,7 +41,7 @@ async function get_line(filename, line_no, callback) {
     var data = fs.readFileSync(filename, 'utf8');
     var lines = data.split("\n");
 
-    if (+line_no > lines.lenght) {
+    if (+line_no > lines.length) {
         throw new Error('File end reached without finding line');
     }
     
@@ -64,7 +60,7 @@ async function getStuff() {
 
     console.log("\n");
     console.log(`The datafeed deployOracle will use is: ${chalk.green(datafeed)}`);
-    console.log(`The tsyms deployeOracle will use use for the IC will be ${chalk.green(tsyms)}`);
+    console.log(`The tsyms deployOracle will use use for the IC will be ${chalk.green(tsyms)}`);
     console.log(`The table to be created or used to track pairs created will be: ${chalk.green(tableNew)}`);
     console.log("\n");
 }

@@ -19,6 +19,8 @@ Note: You need to export your XinFin wallet address private key and keep this in
 create a second wallet address, fund with just enough PLI and XDC to deploy your contracts, and keep it separate from your main rewards wallet.
 Proceed with caution and make sure secure your VPS!
 
+If doing apothem testing, you will need to get XDC and PLI from the apothem faucets.
+
 ## Recommended setup
 
 - For testing, an apothem node is highly recommended.  Use my repo on the apothem branch to quickly set up an apothem node:
@@ -30,9 +32,52 @@ https://github.com/go140point6/plugin-deployment/tree/apothem
 
 ## How to run
 
-### 
+###
+- Before you use the repo, you need to upgrade your node version to something more current than the plugin node is using.  You will do this locally, not globally.  The plugin node will continue to use the global node version 15 I believe (doesn't seem to be affected in any case).
 
+- install latest nvm
+```
+cd ~
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+```
+exit and restart your terminal session
 
+- install latest LTS version of node (currently v18.14.0)
+```
+cd plugin-truffle-box
+nvm install --lts
+```
+
+- Now install the repo and install the packages
+```
+git clone https://github.com/go140point6/plugin-truffle-box.git
+cd plugin-truffle-box
+npm install
+```
+
+- Configure your specific environment variables in .env, adding your private key and node regular address, and selecting either apothem or mainnet configuration
+```
+cp .env-sample .env
+```
+
+- Set up the database using the stand-alone script.  Note, the file startClean.sh in root will IMMEDIATELY wipe out and recreate the database clean, so use with caution.
+```
+node scripts/101_createDB.js
+```
+Lots of debug info currently, scroll up and look specifically for "No duplicate symbols found, that's good!" which tells you the first 250 crypto by marketcap had no ticker symbols in common.
+
+- Next, there are two text files 'datafeed.txt' and 'tsyms.txt'.  Whatever you named your bridge, use in datafeed (i.e. tl_binance).  Whatever pair base you working with, use tsyms.txt (i.e. USDT).  Note that some datafeeds (like tl_binance) don't work with fiat bases (like USD).  Be sure to test against apothem before running a multiRun.sh.
+
+- Now it's time to run.  Start with the single, then crank it up.  Be sure to change the base and datafeed when you want to.
+```
+./singleRun -n apothem (or mainnet)
+OR
+./multiRun -x 10 -n apothem (or mainnet)
+```
+note that if doing more than 10, you will get a warning and must add -f true to your request.
+
+## What's next?
+- scripts 
 
 ## GoPlugin Installation Documentation
 - https://docs.goplugin.co/
