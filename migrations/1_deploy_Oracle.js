@@ -123,7 +123,7 @@ async function checkColumn() {
     if (colState === 0) {
         console.log("\n")
         console.log(`Column ${chalk.green(tsyms)} DOES NOT exist in table ${chalk.green(tableNew)}, creating this column...`);
-        await addColumn()
+        await addColumn();
     } else {
         console.log("\n")
         console.log(`Column ${chalk.green(tsyms)} already exists in table ${chalk.green(tableNew)}, skipping...`);
@@ -133,9 +133,17 @@ async function checkColumn() {
 async function addColumn() {
     const add = db.prepare(`ALTER TABLE ${tableNew} ADD COLUMN "${tsyms}" BOOLEAN DEFAULT 0 NOT NULL CHECK (${tsyms} IN (0, 1))`)
     var result = add.run();
-    console.log(result);
+    //console.log(result);
     console.log("\n")
     console.log(`Column ${chalk.green(tsyms)} has been added to table ${chalk.green(tableNew)}`);
+    await checkSameFandT();
+}
+
+async function checkSameFandT() {
+    const add = db.prepare(`UPDATE ${tableNew} SET ${tsyms} = 1 WHERE symbol = '${tsyms}'`);
+    var result = add.run();
+    console.log("\n")
+    console.log(`Row with symbol ${chalk.green(tsyms)} has been marked complete since this is column ${chalk.green(tsyms)}`);
 }
 
 async function pushInitialDB() {

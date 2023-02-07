@@ -28,7 +28,7 @@ else
         node scripts/3_transferPLI.js && \
         node scripts/4_requestData.js && \
         rm -rf ./build
-        exit 0
     done
+    exit 0
 fi
 
