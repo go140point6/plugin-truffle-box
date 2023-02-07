@@ -22,9 +22,13 @@ elif [[ $number -gt 10 ]] && ! [[ $force == true ]]; then
 else
     for (( i=1; i<=$number; i++ )); do
         ./node_modules/.bin/truffle migrate --clean -f 1 --to 1 --network $network && \
+        node scripts/1_fulfillment.js && \
         ./node_modules/.bin/truffle migrate --clean -f 2 --to 2 --network $network --compile-none && \
+        node scripts/2_approvePLI.js && \
+        node scripts/3_transferPLI.js && \
+        node scripts/4_requestData.js && \
         rm -rf ./build
+        exit 0
     done
-    exit 0
 fi
 
