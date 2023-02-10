@@ -2,9 +2,9 @@
 const h = require("@goplugin/plugin-test-helpers");
 const Database = require('better-sqlite3');
 const Xdc3 = require("xdc3");
-const { Client } = require("pg");
 const chalk = require("chalk");
-const { sleep } = require('../utils/sleep')
+const { Client } = require("pg");
+const { sleep } = require('../utils/sleep');
 
 require("dotenv").config();
 
@@ -22,17 +22,16 @@ var ic;
 var datafeed;
 var prevNonce;
 var testCount = 0;
+var waitCount = 0;
 
 doTest();
 
 async function doTest() {
     await getTested();
     await main().catch(e => console.error(e));
-    //await setTestedTrue();
-    //await checkWork()
+    await setTestedTrue();
+    await checkWork()
     //await confirmSuccess();
-    //await confirmTx();
-    //connectDb()
 }
 
 async function getTested() {
@@ -96,13 +95,16 @@ async function main() {
         .once("receipt", console.log);
     request = h.decodeRunRequest(txt.logs[3]);
     console.log("request has been sent. request id :=" + request.id, request.data.toString("utf-8"))
+    //console.log("waiting 15 seconds before checking tx was recorded by the oracle.")
+    //await sleep(15000); // wait 15 seconds
+
 }
 
 async function setTestedTrue() {
     const setTest = db.prepare(`UPDATE ${tableMain} SET tested = 1 WHERE ic = '${ic}'`);
     setTest.run();
     console.log("\n");
-    console.log(`The IC test is complete for ${chalk.green(ic)}.  Need to circle back and put in a true test.`);
+    console.log(`The IC test is complete for ${chalk.green(ic)}.`);
 }
 
 async function checkWork() {
@@ -111,9 +113,7 @@ async function checkWork() {
     console.log(result)
 }
 
-//await sleep(10000); // wait 10 seconds
-
-const connectDb = async () => {
+const confirmSuccess = async () => {
     try {
         const client = new Client({
             user: process.env.PGUSER,
@@ -124,51 +124,7 @@ const connectDb = async () => {
         });
 
         await client.connect();
-    
-        async function pollAgain() {
-            const str = oracle;
-            const subStr = str.substring(2,42);
-            //const res = await client.query(`SELECT state FROM eth_txes WHERE to_address = decode('${subStr}', 'hex') LIMIT 1`);
-            const res = await client.query(`SELECT state, error FROM eth_txes WHERE to_address = decode('${subStr}', 'hex')`);
-            let rows = res.rows;
-            console.log(rows);
-            console.log(rows.length);
-
-            if (rows.length !== 0 ) {
-                console.log("rows exist");
-                if (rows[0].state === "confirmed") {
-                    console.log("Tx confirmed! ", rows[0].state);
-                    await client.end()
-                } else {
-                    console.log("The state is: ", rows[0].state);
-                    await setTimeout(pollAgain, 1000);
-                }
-            } else {
-                console.log("no rows yet");
-                await setTimeout(pollAgain, 1000);
-            }
-
-        await pollAgain();
-        }
-
-    } catch (error) {
-        console.log(error)
-    }
-}
-
-/*
-    async function confirmSuccess() {
-        var waitCount = 0;
-        const client = new Client({
-            user: process.env.PGUSER,
-            host: process.env.PGHOST,
-            database: process.env.PGDATABASE,
-            password: process.env.PGPASSWORD,
-            port: process.env.PGPORT
-        });
-    
-        await client.connect();
-    
+        
         async function waitForConfirm() {
             const str = oracle;
             //console.log(str);
@@ -207,15 +163,17 @@ const connectDb = async () => {
                     console.log(`Giving up, tx failed for some reason, please check.`);
                     await client.end();
                 } else {
-                    console.log("Attempting test of IC again...");
+                    console.log("Attempting test of IC again...");4
                     await client.end();
                     testCount++;
                     doTest();
                 }
             }
         }
-    
-        waitForConfirm();
-    };
-*/
 
+        await waitForConfirm();
+
+        } catch (error) {
+            console.error(error)
+            }
+}
