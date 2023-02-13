@@ -69,9 +69,9 @@ Lots of debug info currently, scroll up and look specifically for "No duplicate 
 
 - Now it's time to run.  Start with the single, then crank it up.  Be sure to change the base and datafeed when you want to.
 ```
-./singleRun -n apothem (or mainnet)
+./singleRun.js -n apothem (or mainnet)
 OR
-./multiRun -x 10 -n apothem (or mainnet)
+./multiRun.js -x 10 -n apothem (or mainnet)
 ```
 note that if doing more than 10, you will get a warning and must add -f true to your request.
 
