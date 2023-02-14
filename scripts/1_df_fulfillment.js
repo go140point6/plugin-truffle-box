@@ -8,27 +8,43 @@ require("dotenv").config();
 const db = new Database('data/data.db', {verbose: console.log });
 var tableModel = "topcrypto_model";
 var tableNew;
-var tableMain = "main";
+var tableDF = "datafeed";
 
 var oracle;
 //var oracle = "0x258b4adA9E315A0b0c2a8437E1A41F0767241F2A";
+var doFulfill = true;
 
 doFulfillment();
 
 async function doFulfillment() {
     await getOracle();
-    await main().catch(e => console.error(e));
-    await setFulfillTrue();
+    if (doFulfill) {
+        await main().catch(e => console.error(e));
+        await setFulfillTrue();
+    } else {
+        console.log("Fulfillment already done and marked completed.");
+    }
+    
 }
 
 async function getOracle() {
-    const getOCA = db.prepare(`SELECT oracle FROM ${tableMain} WHERE fulfill IS 0`);
-    let result = getOCA.get();
-    oracle = result.oracle;
+    const getOCAState = db.prepare(`SELECT EXISTS (SELECT 1 FROM ${tableDF} WHERE fulfill_done IS 0)`);
+    let result = getOCAState.get();
+    let state = (Object.values(result));
+    console.log("state", state);
 
-    console.log("\n");
-    console.log(`The OCA to fulfill will be: ${chalk.green(oracle)}`);
-}
+    if (state == 1 ) {  // row found that needs fulfillment done
+        console.log("row found that needs fulfillment 1_df_fulfillment.js");
+        const getOCA = db.prepare(`SELECT oracle FROM ${tableDF} WHERE fulfill_done IS 0 LIMIT 1`);
+        let result = getOCA.get();
+        oracle = result.oracle;
+        console.log("\n");
+        console.log(`The OCA to fulfill will be: ${chalk.green(oracle)}`);
+    } else { // no rows need fulfillment done
+        console.log("no rows need fulfillment 1_df_fulfillment.js");
+        doFulfill = false;
+    }
+};
 
 async function main() {
     const xdc3 = new Xdc3(
@@ -78,12 +94,12 @@ async function main() {
 }
 
 async function setFulfillTrue() {
-    const setTrue = db.prepare(`UPDATE ${tableMain} SET fulfill = 1 WHERE oracle = '${oracle}'`);
+    const setTrue = db.prepare(`UPDATE ${tableDF} SET fulfill_done = 1 WHERE oracle = '${oracle}'`);
     setTrue.run();
     console.log("\n");
     console.log(`The OCA fulfillment is complete for ${chalk.green(oracle)}.  Need to circle back and put in a true test.`);
 
-    const checkWork = db.prepare(`SELECT * FROM ${tableMain} WHERE oracle = '${oracle}'`);
+    const checkWork = db.prepare(`SELECT * FROM ${tableDF} WHERE oracle = '${oracle}'`);
     let result = checkWork.all();
     console.log(result)
 }

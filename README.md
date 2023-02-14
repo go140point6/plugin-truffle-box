@@ -65,7 +65,7 @@ node scripts/101_createDB.js
 ```
 Lots of debug info currently, scroll up and look specifically for "No duplicate symbols found, that's good!" which tells you the first 250 crypto by marketcap had no ticker symbols in common.
 
-- Next, there are two text files 'datafeed.txt' and 'tsyms.txt'.  Whatever you named your bridge, use in datafeed (i.e. tl_binance).  Whatever pair base you working with, use tsyms.txt (i.e. USDT).  Note that some datafeeds (like tl_binance) don't work with fiat bases (like USD).  Be sure to test against apothem before running a multiRun.sh.
+- Next, there are two text files 'datafeed' and 'tsyms'.  Whatever you named your bridge, use in datafeed (i.e. tl_binance).  Whatever pair base you working with, use tsyms (i.e. USDT).  Note that some datafeeds (like tl_binance) don't work with fiat bases (like USD).  Be sure to test against apothem before running a multiRun.sh.
 
 - Now it's time to run.  Start with the single, then crank it up.  Be sure to change the base and datafeed when you want to.
 ```

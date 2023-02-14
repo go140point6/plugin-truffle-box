@@ -8,19 +8,22 @@ require("dotenv").config();
 const db = new Database('data/data.db', {verbose: console.log });
 var tableModel = "topcrypto_model";
 var tableNew;
-var tableMain = "main";
+var tableDF = "datafeed";
 
 var oracle;
 var ic;
 var prevNonce;
+var doTran = true;
 
 doTransfer();
 
 async function doTransfer() {
     await getTransfer();
-    await main().catch(e => console.error(e));
-    await setTransferTrue();
-    await checkWork()
+    if (doTran) {
+        await main().catch(e => console.error(e));
+        await setTransferTrue();
+        await checkWork()
+    }
 }
 
 const convertTokens = async (n) => {
@@ -29,12 +32,19 @@ const convertTokens = async (n) => {
 }
 
 async function getTransfer() {
-    const getApp = db.prepare(`SELECT ic FROM ${tableMain} WHERE transfer IS 0`);
-    let result = getApp.get();
-    ic = result.ic;
+    const getTranState = db.prepare(`SELECT EXISTS (SELECT 1 FROM ${tableDF} WHERE transfer_done IS 0)`);
+    let result = getTranState.get();
+    let state = (Object.values(result));
 
-    console.log("\n");
-    console.log(`The IC to transfer PLI to will be: ${chalk.green(ic)}`);
+    if (state == 1 ) {  // row found that needs fulfillment done
+        const getTran = db.prepare(`SELECT ic FROM ${tableDF} WHERE transfer_done IS 0 LIMIT 1`);
+        let result = getTran.get();
+        ic = result.ic;
+        console.log("\n");
+        console.log(`The IC to transfer PLI to will be: ${chalk.green(ic)}`);
+    } else {
+        doTran = false;
+    }
 }
 
 async function main() {
@@ -50,7 +60,7 @@ async function main() {
     const tokenContract = new xdc3.eth.Contract(tokenABI, process.env.PLIADDRESS);
     // console.log("tokenContract", tokenContract)
 
-    const _tokens = 0.5;
+    const _tokens = 0.005;
     const tokens = await convertTokens(_tokens);
     //console.log("Tokens are", tokens);
     console.log("Tokens as string", tokens.toString());
@@ -92,14 +102,14 @@ async function main() {
 }
 
 async function setTransferTrue() {
-    const setTrue = db.prepare(`UPDATE ${tableMain} SET transfer = 1 WHERE ic = '${ic}'`);
+    const setTrue = db.prepare(`UPDATE ${tableDF} SET transfer_done = 1 WHERE ic = '${ic}'`);
     setTrue.run();
     console.log("\n");
     console.log(`The IC approval is complete for ${chalk.green(ic)}.  Need to circle back and put in a true test.`);
 }
 
 async function checkWork() {
-    const checkWork = db.prepare(`SELECT * FROM ${tableMain} WHERE ic = '${ic}'`);
+    const checkWork = db.prepare(`SELECT * FROM ${tableDF} WHERE ic = '${ic}'`);
     let result = checkWork.all();
     console.log(result)
     }

@@ -6,22 +6,44 @@ const Database = require('better-sqlite3');
 //const fs = require('fs');
 
 const db = new Database('data/data.db', {verbose: console.log });
-var fulfill = 0;
-var approve = 0;
-var transfer = 0;
-var tested = 0;
+var oracle_done = 0;
+var fulfill_done = 0;
+var jobid_done = 0;
+var ic_done = 0;
+var approve_done = 0;
+var transfer_done = 0;
+var tested_done = 0;
+var touched = 0;
+var complete = 0;
+
 
 //var tsyms;
 //var fsyms;
 //var datafeed;
 //var tableNew;
 
-var tableDF = "main";
-var tableM = "topcrypto_model";
-var fieldsDF = `(id INTEGER PRIMARY KEY AUTOINCREMENT, oracle TEXT, fulfill BOOLEAN DEFAULT 0 NOT NULL CHECK (${fulfill} IN (0, 1)), jobid TEXT, fsyms TEXT, tsyms TEXT, ic TEXT, approve BOOLEAN DEFAULT 0 NOT NULL CHECK (${approve} IN (0, 1)), transfer BOOLEAN DEFAULT 0 NOT NULL CHECK (${transfer} IN (0, 1)), tested BOOLEAN DEFAULT 0 NOT NULL CHECK (${tested} IN (0, 1)), datafeed TEXT)`;
+var tableDF = "datafeed";
+var tableModel = "topcrypto_model";
+
+var fieldsDF = `(id INTEGER PRIMARY KEY AUTOINCREMENT,
+                oracle TEXT UNIQUE,
+                oracle_done BOOLEAN DEFAULT 0 NOT NULL CHECK (${oracle_done} IN (0, 1)),
+                fulfill_done BOOLEAN DEFAULT 0 NOT NULL CHECK (${fulfill_done} IN (0, 1)),
+                jobid TEXT UNIQUE,
+                jobid_done BOOLEAN DEFAULT 0 NOT NULL CHECK (${jobid_done} IN (0, 1)),
+                fsyms TEXT,
+                tsyms TEXT,
+                ic TEXT UNIQUE,
+                ic_done BOOLEAN DEFAULT 0 NOT NULL CHECK (${ic_done} IN (0, 1)),
+                approve_done BOOLEAN DEFAULT 0 NOT NULL CHECK (${approve_done} IN (0, 1)),
+                transfer_done BOOLEAN DEFAULT 0 NOT NULL CHECK (${transfer_done} IN (0, 1)),
+                tested_done BOOLEAN DEFAULT 0 NOT NULL CHECK (${tested_done} IN (0, 1)),
+                touched BOOLEAN DEFAULT 0 NOT NULL CHECK (${touched} IN (0, 1)),
+                complete BOOLEAN DEFAULT 0 NOT NULL CHECK (${complete} IN (0, 1)),
+                datafeed TEXT)`;
 var fieldsM = "(id TEXT PRIMARY KEY, market_cap_rank TEXT, symbol TEXT, name TEXT)";
 var createDF = `CREATE TABLE IF NOT EXISTS ${tableDF} ${fieldsDF}`;
-var createM = `CREATE TABLE IF NOT EXISTS ${tableM} ${fieldsM}`;
+var createM = `CREATE TABLE IF NOT EXISTS ${tableModel} ${fieldsM}`;
 const createTableDF = db.prepare(createDF);
 const createTableM = db.prepare(createM);
 createTableDF.run();
@@ -35,7 +57,7 @@ async function createModel() {
 
             //console.log(res.data);
 
-            const insertModel = db.prepare(`INSERT INTO ${tableM} (id, market_cap_rank, symbol, name) VALUES (@id, @market_cap_rank, @symbol, @name)`);
+            const insertModel = db.prepare(`INSERT INTO ${tableModel} (id, market_cap_rank, symbol, name) VALUES (@id, @market_cap_rank, @symbol, @name)`);
 
             const insertManyModel = db.transaction((pairs) => {
                 for (const pair of pairs) {
@@ -52,7 +74,7 @@ async function checkDup() {
     //var results4 = count.all();
     //console.log(results4);
     //const count2 = db.prepare(`SELECT id, COUNT(symbol) FROM ${tableP} GROUP BY market_cap_rank`);
-    const count2 = db.prepare(`SELECT id, COUNT(symbol) FROM ${tableM} GROUP BY market_cap_rank HAVING COUNT(symbol) > 1`);
+    const count2 = db.prepare(`SELECT id, COUNT(symbol) FROM ${tableModel} GROUP BY market_cap_rank HAVING COUNT(symbol) > 1`);
     var results5 = count2.all();
     //console.log(results5);
     if (results5) {
@@ -62,29 +84,29 @@ async function checkDup() {
     }
 }
 
-async function makeUpper() {
-    const upper = db.prepare(`UPDATE ${tableM} set symbol = upper(symbol)`);
+async function makeUpper() { // make sure symbol is all uppercase
+    const upper = db.prepare(`UPDATE ${tableModel} set symbol = upper(symbol)`);
     let result = upper.run();
-    const checkUpper = db.prepare(`SELECT symbol FROM ${tableM} LIMIT 5`)
+    const checkUpper = db.prepare(`SELECT symbol FROM ${tableModel} LIMIT 5`)
     let result2 = checkUpper.all();
     console.log(result2);
 }
 
 async function createDB() {
     await createModel();
-    const stmt = db.prepare(`SELECT * FROM ${tableM} LIMIT 5`);
+    const stmt = db.prepare(`SELECT * FROM ${tableModel} LIMIT 5`);
     var results = stmt.all();
     console.log(results);
-    console.log(`Showing first 5 rows of table ${tableM} for review`);
+    console.log(`Showing first 5 rows of table ${tableModel} for review`);
+    await showColumns();
     await checkDup();
     await makeUpper();
-    await showColumns();
 };
 
 // Dev testing stuff below
 
 async function getStuff() {
-    await get_line('../datafeed.txt', 0, function(err, line) {
+    await get_line('../datafeed', 0, function(err, line) {
         datafeed = line;
         //console.log(line);
         tableNew = `topcrypto_${datafeed}`;
@@ -92,7 +114,7 @@ async function getStuff() {
         //console.log(tableNew);
     });
 
-    await get_line('../tsyms.txt', 0, function(err, line) {
+    await get_line('../tsyms', 0, function(err, line) {
         //console.log(line)
         tsyms = line;
         //console.log(tsyms);
@@ -247,7 +269,7 @@ duplicateTableP.run();
 //let date = new Date().toISOString()
 let id = null;
 
-await get_line('tsyms.txt', 1, function(err, line) {
+await get_line('tsyms', 1, function(err, line) {
     let tsyms = line;
     //console.log(tsyms)
 });
