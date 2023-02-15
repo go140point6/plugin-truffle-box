@@ -22,6 +22,7 @@ var ic;
 var datafeed;
 var prevNonce;
 var doTest = true;
+var txConfirmed = false;
 
 doTested();
 
@@ -30,10 +31,7 @@ async function doTested() {
     if (doTest) {
         await main().catch(e => console.error(e));
         await confirmTx();
-        await setTestedTrue();
     }
-    await setCompleteTrue();
-    await checkWork();
 }
 
 async function getTested() {
@@ -138,6 +136,7 @@ async function confirmTx() {
                         console.log("Tx: ", rows[0].state);
                         await client.end();
                         await setTestedTrue();
+                        await setCompleteTrue();
                         await checkWork();
                     } else {
                         console.log("The state is: ", rows[0].state);
@@ -155,7 +154,6 @@ async function confirmTx() {
                     console.log(`Transaction taking to long, presumed failed.`);
                     await client.end();
                     await checkWork();
-
                 }
             }
             await waitConfirm();
@@ -178,7 +176,7 @@ async function setCompleteTrue() {
 }
 
 async function checkWork() {
-    const checkWork = db.prepare(`SELECT * FROM ${tableDF} ORDER BY id DESC LIMIT 3`);
+    const checkWork = db.prepare(`SELECT * FROM ${tableDF} ORDER BY id DESC LIMIT 1`);
     let result = checkWork.all();
     console.log(result);
     }
