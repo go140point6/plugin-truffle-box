@@ -54,9 +54,15 @@ cd plugin-truffle-box
 npm install
 ```
 
-- Configure your specific environment variables in .env, adding your private key and node regular address, and selecting either apothem or mainnet configuration
+- Configure your specific environment variables in .env, adding your private key, node regular address, and postgres passwords, as well as selecting either apothem or mainnet configuration.
 ```
 cp .env-sample .env
+```
+
+- Copy datafeed-sample to datafeed, and tsyms-sample to tsyms, edit both appropriately
+```
+cp datafeed-sample datafeed
+cp tsyms-sample tsyms
 ```
 
 - Set up the database using the stand-alone script.  Note, the file startClean.sh in root will IMMEDIATELY wipe out and recreate the database clean, so use with caution.
@@ -65,9 +71,9 @@ node scripts/101_createDB.js
 ```
 Lots of debug info currently, scroll up and look specifically for "No duplicate symbols found, that's good!" which tells you the first 250 crypto by marketcap had no ticker symbols in common.
 
-- Next, there are two text files 'datafeed.txt' and 'tsyms.txt'.  Whatever you named your bridge, use in datafeed (i.e. tl_binance).  Whatever pair base you working with, use tsyms.txt (i.e. USDT).  Note that some datafeeds (like tl_binance) don't work with fiat bases (like USD).  Be sure to test against apothem before running a multiRun.sh.
+- Next, there are two text files 'datafeed' and 'tsyms'.  Whatever you named your bridge, use in datafeed (i.e. tl_binance).  Whatever pair base you working with, use tsyms (i.e. USDT).  Note that some datafeeds (like tl_binance) don't work with fiat bases (like USD).  Be sure to test against apothem before running a multiRun.sh.
 
-- Now it's time to run.  Start with the single, then crank it up.  Be sure to change the base and datafeed when you want to.
+- Now it's time to run.  Start with the single, then crank it up.  Be sure to change the tsyms base and datafeed as needed.
 ```
 ./singleRun.js -n apothem (or mainnet)
 OR

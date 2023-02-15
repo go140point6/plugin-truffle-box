@@ -8,19 +8,23 @@ require("dotenv").config();
 const db = new Database('data/data.db', {verbose: console.log });
 var tableModel = "topcrypto_model";
 var tableNew;
-var tableMain = "main";
+var tableDF = "datafeed";
 
 var oracle;
 var ic;
 var prevNonce;
+var doApp = true;
 
 doApprove();
 
 async function doApprove() {
     await getApprove();
-    await main().catch(e => console.error(e));
-    await setApproveTrue();
-    await checkWork()
+    if (doApp) {
+        await main().catch(e => console.error(e));
+        await setApproveTrue();
+        await checkWork()
+    }
+    
 }
 
 const convertTokens = async (n) => {
@@ -29,13 +33,20 @@ const convertTokens = async (n) => {
 }
 
 async function getApprove() {
-    const getApp = db.prepare(`SELECT ic FROM ${tableMain} WHERE approve IS 0`);
-    let result = getApp.get();
-    ic = result.ic;
+    const getAppState = db.prepare(`SELECT EXISTS (SELECT 1 FROM ${tableDF} WHERE approve_done IS 0)`);
+    let result = getAppState.get();
+    let state = (Object.values(result));
 
-    console.log("\n");
-    console.log(`The IC to approve will be: ${chalk.green(ic)}`);
-}
+    if (state == 1 ) {  // row found that needs approval done
+        const getApp = db.prepare(`SELECT ic FROM ${tableDF} WHERE approve_done IS 0 LIMIT 1`);
+        let result = getApp.get();
+        ic = result.ic;
+        console.log("\n");
+        console.log(`The IC to approve will be: ${chalk.green(ic)}`);
+    } else { // no rows need fulfillment done
+        doApp = false;
+    }
+};
 
 async function main() {
     const xdc3 = new Xdc3(
@@ -54,7 +65,7 @@ async function main() {
     const requestContract = new xdc3.eth.Contract(requestABi, ic);
     // console.log("requestContract", requestContract)
 
-    const _tokens = 0.5;
+    const _tokens = 0.005;
     const tokens = await convertTokens(_tokens);
     //console.log("Tokens are", tokens);
     console.log("Tokens as string", tokens.toString());
@@ -88,14 +99,14 @@ async function main() {
 }
 
 async function setApproveTrue() {
-    const setTrue = db.prepare(`UPDATE ${tableMain} SET approve = 1 WHERE ic = '${ic}'`);
+    const setTrue = db.prepare(`UPDATE ${tableDF} SET approve_done = 1 WHERE ic = '${ic}'`);
     setTrue.run();
     console.log("\n");
     console.log(`The IC approval is complete for ${chalk.green(ic)}.  Need to circle back and put in a true test.`);
 }
 
 async function checkWork() {
-    const checkWork = db.prepare(`SELECT * FROM ${tableMain} WHERE ic = '${ic}'`);
+    const checkWork = db.prepare(`SELECT * FROM ${tableDF} WHERE ic = '${ic}'`);
     let result = checkWork.all();
     console.log(result)
     }
