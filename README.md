@@ -67,7 +67,7 @@ cp tsyms-sample tsyms
 
 - Set up the database using the stand-alone script.  Note, the file startClean.sh in root will IMMEDIATELY wipe out and recreate the database clean, so use with caution.
 ```
-node scripts/101_createDB.js
+node scripts/101_df_createDB.js
 ```
 Lots of debug info currently, scroll up and look specifically for "No duplicate symbols found, that's good!" which tells you the first 250 crypto by marketcap had no ticker symbols in common.
 
