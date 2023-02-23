@@ -13,3 +13,5 @@ plinode_job_data-feeds.json
 tsyms
 datafeed
 build/
+package-lock.json
+.gitignore
