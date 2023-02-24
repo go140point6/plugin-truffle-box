@@ -55,6 +55,7 @@ module.exports = {
           )
         },
         gas: 20000000,
+        networkCheckTimeout: 999999,
         network_id: 51,
         confirmations: 5
       },
